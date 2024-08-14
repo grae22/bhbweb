@@ -3,6 +3,7 @@ package domain
 import (
 	"errors"
 	"log"
+	"os"
 	"slices"
 	"time"
 )
@@ -15,7 +16,7 @@ type Book struct {
 }
 
 func NewBook(name string) (*Book, error) {
-	accounts, err := newAccountService(name)
+	accounts, err := newAccountService(name, false)
 	if err != nil {
 		return nil, err
 	}
@@ -27,18 +28,20 @@ func NewBook(name string) (*Book, error) {
 		balances:     newPeriodBalancesService(name, &accounts),
 	}
 
-	accounts.addRootAccount("Bank", TypeBank)
-	accounts.addRootAccount("Income", TypeIncome)
-	accounts.addRootAccount("Expenses", TypeExpense)
-	accounts.addRootAccount("Debtors", TypeDebtor)
-	accounts.addRootAccount("Creditors", TypeCreditor)
+	newBook.accounts.addRootAccount("Bank", TypeBank)
+	newBook.accounts.addRootAccount("Income", TypeIncome)
+	newBook.accounts.addRootAccount("Expenses", TypeExpense)
+	newBook.accounts.addRootAccount("Debtors", TypeDebtor)
+	newBook.accounts.addRootAccount("Creditors", TypeCreditor)
 
 	return &newBook, nil
 }
 
 func LoadBook(name string) (*Book, error) {
-	accounts, err := newAccountService(name)
-	if err != nil {
+	accounts, err := newAccountService(name, true)
+	if errors.Is(err, os.ErrNotExist) {
+		return NewBook(name)
+	} else if err != nil {
 		return nil, err
 	}
 

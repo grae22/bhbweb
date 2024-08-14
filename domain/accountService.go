@@ -14,13 +14,21 @@ type accountService struct {
 	nextAccountId int
 }
 
-func newAccountService(bookName string) (accountService, error) {
+func newAccountService(
+	bookName string,
+	loadFromFile bool,
+) (accountService, error) {
+
 	accounts := accountService{
 		bookName:     bookName,
 		accountsById: make(map[int]*Account),
 	}
 
-	err := accounts.load()
+	var err error
+
+	if loadFromFile {
+		err = accounts.load()
+	}
 
 	return accounts, err
 }
@@ -131,7 +139,7 @@ func (as *accountService) load() error {
 
 	if _, err := os.Stat(as.bookName + ".accounts"); errors.Is(err, os.ErrNotExist) {
 		log.Printf("File not found, creating new accounts...")
-		return nil
+		return err
 	}
 
 	bytes, err := os.ReadFile(as.bookName + ".accounts")
