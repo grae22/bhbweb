@@ -25,7 +25,7 @@ func (c Controller) ViewAccount(
 	}
 
 	responseHtml := pageHeader
-	responseHtml += "<span><sup><a href='/home'>Home</a></sup></span>"
+	responseHtml += fmt.Sprintf("<span><sup><a href='/home?period=%s'>Home</a></sup></span>", periodId)
 
 	periodData, err := c.Book.BalancesForDate(domain.DateForPeriodId(periodId))
 	if err != nil {

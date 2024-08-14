@@ -84,9 +84,11 @@ func (c TransactionController) AddTransaction(
 		return
 	}
 
+	periodId := domain.PeriodIdForDate(date)
+
 	http.Redirect(
 		response,
 		request,
-		"/home",
+		"/home?period="+periodId,
 		http.StatusSeeOther)
 }

@@ -4,7 +4,6 @@ import (
 	"bhbweb/domain"
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -12,9 +11,13 @@ func (c Controller) Home(
 	responseWriter http.ResponseWriter,
 	request *http.Request,
 ) {
-	periodOffset, _ := strconv.Atoi(request.URL.Query().Get("periodOffset"))
+	period := request.URL.Query().Get("period")
 
-	showForDate := time.Now().AddDate(0, periodOffset, 0)
+	if period == "" {
+		period = time.Now().Format("0601")
+	}
+
+	showForDate, _ := time.Parse("0601", period)
 
 	periodData, err := c.Book.BalancesForDate(showForDate)
 	if err != nil {
@@ -23,11 +26,14 @@ func (c Controller) Home(
 		return
 	}
 
+	previousPeriodId := showForDate.AddDate(0, -1, 0).Format("0601")
+	nextPeriodId := showForDate.AddDate(0, 1, 0).Format("0601")
+
 	responseHtml := pageHeader +
 		"<span><center>" +
-		fmt.Sprintf("<a href='/home?periodOffset=%d'>%s</a> ", periodOffset-1, showForDate.AddDate(0, -1, 0).Format("Jan 06")) +
+		fmt.Sprintf("<a href='/home?period=%s'>%s</a> ", previousPeriodId, showForDate.AddDate(0, -1, 0).Format("Jan 06")) +
 		"<b>" + showForDate.Format("Jan 06") + "</b>" +
-		fmt.Sprintf(" <a href='/home?periodOffset=%d'>%s</a>", periodOffset+1, showForDate.AddDate(0, 1, 0).Format("Jan 06")) +
+		fmt.Sprintf(" <a href='/home?period=%s'>%s</a>", nextPeriodId, showForDate.AddDate(0, 1, 0).Format("Jan 06")) +
 		"</center></span>" +
 		"<p><center><table>"
 
